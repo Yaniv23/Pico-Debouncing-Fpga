@@ -1,0 +1,28 @@
+# Vivado
+*.jou
+*.log
+*.str
+*.wdb
+*.html
+*.xml
+*.ltx
+*.bak
+.cache/
+.hw/
+.runs/
+.sim/
+.ip_user_files/
+.webtalk/
+.xpr.user
+
+# Temporary
+*.tmp
+*.bit
+*.bin
+
+# SDK
+.sdk/
+.metadata/
+.mss/
+*.hdf
+*.xsa

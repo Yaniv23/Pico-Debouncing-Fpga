@@ -1,0 +1,11 @@
+# compile vhdl design source files
+vhdl xil_defaultlib  \
+"../../../../../../../NEW_ASSEMBLER_6/Lab7_vhdl_pico.vhd" \
+"../../../../../ToggleLeddy_Pico6.srcs/sources_1/new/Reg_new.vhd" \
+"../../../../Lab_7_Debouncing.srcs/sources_1/new/Reg_sw.vhd" \
+"../../../../../ToggleLeddy_Pico6.srcs/sources_1/imports/kcpsm6.vhd" \
+"../../../../Lab_7_Debouncing.srcs/sources_1/new/main.vhd" \
+"../../../../Lab_7_Debouncing.srcs/sim_1/new/main_tb.vhd" \
+
+# Do not sort compile order
+nosort

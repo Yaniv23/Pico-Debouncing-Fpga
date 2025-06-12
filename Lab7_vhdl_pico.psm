@@ -1,0 +1,137 @@
+; toggle light of led indefinitely, with delay of N^3 loops (each loop is about 2 instructions and each instruction executes in 2 clock cycles)
+; so for instance with a 100Mhz clock, 10ns per cycle, so one loop is about 4 x 10ns = 40 ns. 
+; So N^3 x 40 ns is the total delay time we get if we choose theDelay = N.
+
+         ;---------CONSTANTS----------------    
+         CONSTANT out_port, 02  
+         CONSTANT input_port, 01
+         CONSTANT ten_loops, 0A ; constant for the number of loops, can be changed to any value 
+         CONSTANT theDelay_cst, 64 ; constant for the delay, can be changed to any value ; 64 VF
+
+         ;---------REGISTER_NAME----------------    
+         NAMEREG s0, first_value
+         NAMEREG s1, next_value
+         NAMEREG s2, ram_adress
+         NAMEREG s3, loop_counter
+         NAMEREG s4, first_value_high
+         NAMEREG s5, first_value_low
+         NAMEREG s6, actual_input 
+         NAMEREG s7, theDelay
+         NAMEREG s8, input1
+         NAMEREG s9, input2
+         NAMEREG sA, count0reg
+         NAMEREG sB, count1reg
+         NAMEREG sC, count2reg
+
+main:
+         CALL init             ; call the initialization function
+         CALL input0           ; call the input function
+         CALL debounce         ; call the debouncing function
+         CALL output0          ; call the output function
+         
+init:
+         LOAD theDelay, theDelay_cst   ; read the delay value
+         LOAD ram_adress, 00           ; RAM pointer starts at 0
+         LOAD loop_counter, 00         ; iteration counter
+         LOAD input1, 00 
+         LOAD input2, 00
+         CALL delay                    ; wait for 1 cycle
+         RETURN
+
+output0:
+         INPUT actual_input, input_port
+         RL actual_input
+         OUTPUT actual_input, out_port
+         CALL delay
+         JUMP output0
+
+input0:
+         INPUT input1, input_port
+         CALL delay
+         INPUT input2, input_port
+         CALL pack_loop
+         COMPARE loop_counter, ten_loops
+         JUMP NZ, input0
+         RETURN
+
+pack_loop:
+         LOAD first_value, input2
+         SL0 first_value
+         SL0 first_value
+         SL0 first_value
+         SL0 first_value
+         OR first_value, input1
+         LOAD next_value, first_value
+         STORE next_value, (ram_adress)
+         ADD ram_adress, 01
+         ADD loop_counter, 01
+         RETURN
+
+debounce:
+         LOAD ram_adress, 00
+         FETCH first_value, (ram_adress)
+
+         LOAD first_value_high, first_value
+         AND first_value_high, F0
+         SR0 first_value_high
+         SR0 first_value_high
+         SR0 first_value_high
+         SR0 first_value_high
+
+         LOAD first_value_low, first_value
+         AND first_value_low, 0F
+
+         COMPARE first_value_high, first_value_low
+         JUMP NZ, restart_main
+
+         LOAD loop_counter, 01
+
+debounce_loop:
+         LOAD ram_adress, loop_counter
+         FETCH next_value, (ram_adress)
+         COMPARE next_value, first_value
+         JUMP NZ, restart_main
+         ADD loop_counter, 01
+         COMPARE loop_counter, 0A
+         JUMP NZ, debounce_loop
+         RETURN
+
+restart_main:
+         JUMP main
+
+delay: 
+         CALL init0
+
+loop0:   
+         CALL delay1 
+         SUB count0reg, 01
+         JUMP NZ, loop0
+         RETURN
+
+delay1:  
+         CALL init1  
+
+loop1:   
+         CALL delay2
+         SUB count1reg, 01
+         JUMP NZ, loop1
+         RETURN
+
+delay2:  
+         CALL init2    
+
+loop2:   
+         SUB count2reg, 01
+         JUMP NZ, loop2
+         RETURN
+
+ADDRESS 080
+
+init0: LOAD  count0reg, theDelay
+       RETURN
+
+init1: LOAD  count1reg, theDelay
+       RETURN
+
+init2: LOAD  count2reg, theDelay
+       RETURN
